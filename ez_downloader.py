@@ -26,18 +26,17 @@ try:
     yt = YouTube(url)
     print(f"Downloading {yt.title}...")
 
-    if extension == "mp3":
-        video = yt.streams.filter(abr='160kbps').last()
-    elif extension == "mp4":
-        video = yt.streams.filter(
-            progressive=True, file_extension="mp4").order_by('resolution').desc().first()
-
+    video = yt.streams.filter(progressive=True, file_extension="mp4").order_by(
+        'resolution').desc().first()
     out_file = video.download(output_path=outdir)
 
-    out_file = Path(out_file)
-    new_file = out_file.with_suffix(f'.{extension}')
-    os.rename(out_file, new_file)
+    if extension == "mp3":
+        print("Converting to mp3...")
+        os.system(
+            f'ffmpeg -i "{out_file}" "{out_file[:-3] + "mp3"}" -nostats -loglevel 0')
+        os.remove(out_file)
 
+    new_file = Path(out_file[:-3] + extension)
     print(f"Downloaded \"{new_file.absolute()}\"")
 
 except Exception as e:
